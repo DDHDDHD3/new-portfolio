@@ -42,8 +42,8 @@ export const Login: React.FC<LoginProps> = ({ isDark, onLogin, onExit }) => {
                     <div className="w-20 h-20 bg-blue-600/10 rounded-3xl flex items-center justify-center text-blue-600 dark:text-blue-400 mx-auto mb-6 shadow-inner border border-blue-500/20">
                         <ShieldCheck size={40} />
                     </div>
-                    <h2 className="text-4xl font-black tracking-tight mb-3">Admin Access</h2>
-                    <p className="text-slate-500 dark:text-slate-400 font-medium">Verify your identity to access the Control Console.</p>
+                    <h2 className="text-4xl font-black tracking-tight mb-3 text-slate-900 dark:text-white">Admin Access</h2>
+                    <p className="text-slate-600 dark:text-slate-100 font-medium">Verify your identity to access the Control Console.</p>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-8">
@@ -57,7 +57,7 @@ export const Login: React.FC<LoginProps> = ({ isDark, onLogin, onExit }) => {
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 placeholder="Security Password"
-                                className="w-full bg-white/5 border border-white/10 rounded-2xl pl-16 pr-6 py-5 focus:outline-none focus:ring-4 focus:ring-blue-600/20 transition-all text-lg font-bold"
+                                className="w-full bg-white/5 border border-white/10 rounded-2xl pl-16 pr-6 py-5 focus:outline-none focus:ring-4 focus:ring-blue-600/20 transition-all text-lg font-bold dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400"
                                 required
                             />
                         </div>
@@ -94,7 +94,7 @@ export const Login: React.FC<LoginProps> = ({ isDark, onLogin, onExit }) => {
                         <button
                             type="button"
                             onClick={onExit}
-                            className="w-full py-4 text-slate-500 dark:text-slate-400 font-black hover:text-slate-900 dark:hover:text-white transition-colors uppercase tracking-[0.2em] text-xs"
+                            className="w-full py-4 text-slate-600 dark:text-slate-100 font-black hover:text-blue-600 dark:hover:text-blue-400 transition-colors uppercase tracking-[0.2em] text-xs"
                         >
                             Back to Portfolio
                         </button>

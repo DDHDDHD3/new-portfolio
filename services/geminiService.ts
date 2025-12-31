@@ -20,7 +20,15 @@ INSTRUCTIONS:
 
 export const getGeminiResponse = async (userMessage: string, context?: { projects: Project[], skills: Skill[], experiences: Experience[] }) => {
   try {
-    const apiKey = import.meta.env.VITE_GEMINI_API_KEY || "AIzaSyAPYPx-pcopfuF1LbDNdct_6urrhZ4SZsI";
+    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+
+    // Debug info (safe)
+    console.log("API Key Status:", apiKey ? `Loaded (starts with ${apiKey.substring(0, 4)}...)` : "NOT FOUND");
+    console.log("Available Env Keys:", Object.keys(import.meta.env).filter(k => k.startsWith("VITE_")));
+
+    if (!apiKey || apiKey === "your_gemini_api_key_here") {
+      throw new Error("Missing or invalid Gemini API Key. Please update VITE_GEMINI_API_KEY in your .env.local file. If you just updated it, try restarting the dev server (npm run dev).");
+    }
     const ai = new GoogleGenAI({ apiKey });
 
     let fullPrompt = userMessage;

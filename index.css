@@ -1,7 +1,85 @@
+@import "tailwindcss";
+@config "./tailwind.config.js";
+
 /* Global styles */
 body {
   margin: 0;
   padding: 0;
+}
+
+@layer base {
+  body {
+    font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+    @apply antialiased;
+  }
+
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 222 47% 11%;
+    --foreground: 210 40% 98%;
+    --card: 222 47% 14%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222 47% 11%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217.2 32.6% 25%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 25%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 25%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 25%;
+    --input: 217.2 32.6% 25%;
+    --ring: 224.3 76.3% 48%;
+  }
+}
+
+@layer components {
+  .glass {
+    @apply bg-white/40 backdrop-blur-xl border border-white/20 shadow-2xl;
+  }
+
+  .glass-dark {
+    @apply bg-slate-800/40 backdrop-blur-xl border border-white/10 shadow-2xl;
+  }
+
+  .fixed-badge-blue {
+    @apply bg-blue-600/10 text-blue-600 border-blue-500/20 shadow-inner px-4 py-1.5 rounded-full font-black text-xs uppercase tracking-widest;
+  }
+
+  .fixed-badge-red {
+    @apply bg-red-600/10 text-red-600 border-red-500/20 shadow-inner px-4 py-1.5 rounded-full font-black text-xs uppercase tracking-widest;
+  }
+
+  .badge-label {
+    @apply inline-block px-3 py-1 rounded-lg bg-blue-600/5 text-blue-600 font-black text-[10px] uppercase tracking-widest border border-blue-500/10;
+    @apply dark:bg-blue-400/5 dark:text-blue-400 dark:border-blue-400/10;
+  }
 }
 
 /* Enable smooth touch scrolling on mobile */
@@ -21,12 +99,12 @@ body {
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(100, 116, 139, 0.3);
+  background: rgb(254, 254, 255);
   border-radius: 4px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(100, 116, 139, 0.5);
+  background: rgb(239, 246, 255);
 }
 
 /* Ensure main content is scrollable on touch devices */

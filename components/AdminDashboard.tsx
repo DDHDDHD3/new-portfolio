@@ -30,6 +30,7 @@ import {
 import { databaseService } from '../services/databaseService';
 import { PROJECTS, SKILLS, EXPERIENCES } from '../constants';
 import { HeroData } from '../types';
+import { ThreeScene } from './ThreeScene';
 
 interface AdminDashboardProps {
     isDark: boolean;
@@ -47,9 +48,11 @@ const StatsCard = ({ title, value, icon: Icon, trend, color, isDark, onClick }: 
         <div className={`absolute top-0 right-0 w-32 h-32 blur-[60px] opacity-20 bg-${color}-600`} />
         <div className="relative z-10 flex items-center justify-between">
             <div>
-                <p className="text-[10px] font-black uppercase tracking-widest opacity-40 mb-2">{title}</p>
-                <h4 className="text-3xl font-black tracking-tight">{value}</h4>
-                <div className="flex items-center space-x-1 text-emerald-500 font-bold text-[10px] mt-2 bg-emerald-500/10 px-2 py-0.5 rounded-full w-fit">
+                <p className="badge-label mb-2 shadow-sm">{title}</p>
+                <h4 className="text-3xl font-black tracking-tight">
+                    <span className="text-highlight !py-0.5 !px-2 shadow-sm border-blue-50/10">{value}</span>
+                </h4>
+                <div className="flex items-center space-x-1 fixed-badge-blue font-bold text-[10px] mt-2 px-2 py-0.5 rounded-full w-fit">
                     <TrendingUp size={10} />
                     <span>{trend}</span>
                 </div>
@@ -138,26 +141,26 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isDark, onExit }
                             <div className={`p-8 rounded-3xl border border-white/5 ${isDark ? 'bg-slate-900/50' : 'bg-white shadow-xl'}`}>
                                 <h2 className="text-xl font-black mb-6 uppercase tracking-widest flex items-center space-x-3">
                                     <Home size={20} className="text-blue-500" />
-                                    <span>Hero Section Content</span>
+                                    <span className="text-highlight !py-1.5 !px-4 border-blue-50/10 shadow-lg">Hero Section Content</span>
                                 </h2>
 
                                 {heroData ? (
                                     <form onSubmit={handleSaveHero} className="space-y-6">
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                             <div className="space-y-2">
-                                                <label className="text-xs uppercase font-black tracking-widest opacity-60">Display Name</label>
+                                                <label className="badge-label mb-2">Display Name</label>
                                                 <input
                                                     type="text"
                                                     value={heroData.name}
                                                     onChange={(e) => setHeroData({ ...heroData, name: e.target.value })}
-                                                    className={`w-full p-4 rounded-xl border border-white/5 ${isDark ? 'bg-white/5' : 'bg-slate-50'}`}
+                                                    className={`w-full p-4 rounded-xl border border-white/5 ${isDark ? 'bg-white/5 text-white' : 'bg-slate-50 text-slate-900'}`}
                                                 />
                                             </div>
                                             <div className="flex items-center space-x-4 pt-6">
                                                 <button
                                                     type="button"
                                                     onClick={() => setHeroData({ ...heroData, available: !heroData.available })}
-                                                    className={`flex-1 py-3 rounded-xl font-black uppercase tracking-widest text-xs transition-colors ${heroData.available ? 'bg-emerald-500/20 text-emerald-500 border border-emerald-500/20' : 'bg-slate-500/20 text-slate-500 border border-slate-500/20'}`}
+                                                    className={`flex-1 py-3 rounded-xl font-black uppercase tracking-widest text-xs transition-colors ${heroData.available ? 'fixed-badge-blue' : 'bg-slate-500/20 text-slate-500 border border-slate-500/20'}`}
                                                 >
                                                     {heroData.available ? 'Status: Available' : 'Status: Unavailable'}
                                                 </button>
@@ -167,7 +170,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isDark, onExit }
 
 
                                         <div className="space-y-4 pt-4">
-                                            <label className="text-xs uppercase font-black tracking-widest opacity-60">Profile Image</label>
+                                            <label className="badge-label mb-2">Profile Image</label>
                                             <div className="flex items-center space-x-6">
                                                 <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-white/10 shrink-0 bg-white/5">
                                                     <img
@@ -191,7 +194,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isDark, onExit }
                                                                 reader.readAsDataURL(file);
                                                             }
                                                         }}
-                                                        className={`w-full p-4 rounded-xl border border-white/5 ${isDark ? 'bg-white/5' : 'bg-slate-50'} text-xs`}
+
+                                                        className={`w-full p-4 rounded-xl border border-white/5 ${isDark ? 'bg-white/5 text-white' : 'bg-slate-50 text-slate-900'} text-xs`}
                                                     />
                                                     <p className="mt-2 text-[10px] opacity-40 uppercase tracking-widest">Recommended: Square Aspect Ratio (e.g. 500x500)</p>
                                                 </div>
@@ -199,22 +203,22 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isDark, onExit }
                                         </div>
 
                                         <div className="space-y-2">
-                                            <label className="text-xs uppercase font-black tracking-widest opacity-60">Tagline / Subtitle</label>
+                                            <label className="badge-label mb-2">Tagline / Subtitle</label>
                                             <textarea
                                                 rows={3}
                                                 value={heroData.tagline}
                                                 onChange={(e) => setHeroData({ ...heroData, tagline: e.target.value })}
-                                                className={`w-full p-4 rounded-xl border border-white/5 resize-none ${isDark ? 'bg-white/5' : 'bg-slate-50'}`}
+                                                className={`w-full p-4 rounded-xl border border-white/5 resize-none ${isDark ? 'bg-white/5 text-white' : 'bg-slate-50 text-slate-900'}`}
                                             />
                                         </div>
 
                                         <div className="space-y-2">
-                                            <label className="text-xs uppercase font-black tracking-widest opacity-60">Short Bio</label>
+                                            <label className="badge-label mb-2">Short Bio</label>
                                             <textarea
                                                 rows={4}
                                                 value={heroData.bio}
                                                 onChange={(e) => setHeroData({ ...heroData, bio: e.target.value })}
-                                                className={`w-full p-4 rounded-xl border border-white/5 resize-none ${isDark ? 'bg-white/5' : 'bg-slate-50'}`}
+                                                className={`w-full p-4 rounded-xl border border-white/5 resize-none ${isDark ? 'bg-white/5 text-white' : 'bg-slate-50 text-slate-900'}`}
                                             />
                                         </div>
 
@@ -222,7 +226,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isDark, onExit }
                                             <button
                                                 type="submit"
                                                 disabled={isHeroSaving}
-                                                className="px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-black uppercase tracking-widest text-xs flex items-center space-x-2 transition-all disabled:opacity-50"
+                                                className="px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-black uppercase tracking-widest text-xs flex items-center space-x-2 transition-all disabled:opacity-50 shadow-xl shadow-blue-500/20"
                                             >
                                                 {isHeroSaving ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
                                                 <span>Save Changes</span>
@@ -242,7 +246,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isDark, onExit }
                 return (
                     <div className="space-y-6">
                         <div className="flex justify-between items-center mb-8">
-                            <h2 className="text-3xl font-black tracking-tight">Manage Projects</h2>
+                            <h2 className="text-3xl font-black tracking-tight">Projects</h2>
                             {!isAdding && (
                                 <button
                                     onClick={() => {
@@ -263,31 +267,31 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isDark, onExit }
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <input
                                         placeholder="Title"
-                                        className={`w-full p-4 rounded-xl border border-white/5 ${isDark ? 'bg-white/5' : 'bg-slate-50'}`}
+                                        className={`w-full p-4 rounded-xl border border-white/5 ${isDark ? 'bg-white/5 text-white' : 'bg-slate-50 text-slate-900'}`}
                                         value={formData.title}
                                         onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                                     />
                                     <input
                                         placeholder="Tech Stack (comma separated)"
-                                        className={`w-full p-4 rounded-xl border border-white/5 ${isDark ? 'bg-white/5' : 'bg-slate-50'}`}
+                                        className={`w-full p-4 rounded-xl border border-white/5 ${isDark ? 'bg-white/5 text-white' : 'bg-slate-50 text-slate-900'}`}
                                         value={formData.tech}
                                         onChange={(e) => setFormData({ ...formData, tech: e.target.value })}
                                     />
                                     <textarea
                                         placeholder="Description"
-                                        className={`w-full p-4 rounded-xl border border-white/5 md:col-span-2 min-h-[100px] ${isDark ? 'bg-white/5' : 'bg-slate-50'}`}
+                                        className={`w-full p-4 rounded-xl border border-white/5 md:col-span-2 min-h-[100px] ${isDark ? 'bg-white/5 text-white' : 'bg-slate-50 text-slate-900'}`}
                                         value={formData.description}
                                         onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                                     />
                                     <input
                                         placeholder="Live Link"
-                                        className={`w-full p-4 rounded-xl border border-white/5 ${isDark ? 'bg-white/5' : 'bg-slate-50'}`}
+                                        className={`w-full p-4 rounded-xl border border-white/5 ${isDark ? 'bg-white/5 text-white' : 'bg-slate-50 text-slate-900'}`}
                                         value={formData.link}
                                         onChange={(e) => setFormData({ ...formData, link: e.target.value })}
                                     />
                                     <input
                                         placeholder="GitHub Link"
-                                        className={`w-full p-4 rounded-xl border border-white/5 ${isDark ? 'bg-white/5' : 'bg-slate-50'}`}
+                                        className={`w-full p-4 rounded-xl border border-white/5 ${isDark ? 'bg-white/5 text-white' : 'bg-slate-50 text-slate-900'}`}
                                         value={formData.github}
                                         onChange={(e) => setFormData({ ...formData, github: e.target.value })}
                                     />
@@ -302,7 +306,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isDark, onExit }
                                             <input
                                                 type="file"
                                                 accept="image/*"
-                                                className={`flex-1 p-4 rounded-xl border border-white/5 ${isDark ? 'bg-white/5' : 'bg-slate-50'}`}
+                                                className={`flex-1 p-4 rounded-xl border border-white/5 ${isDark ? 'bg-white/5 text-white' : 'bg-slate-50 text-slate-900'}`}
                                                 onChange={(e) => {
                                                     const file = e.target.files?.[0];
                                                     if (file) {
@@ -368,8 +372,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isDark, onExit }
                                                 <FileText size={24} />
                                             </div>
                                             <div>
-                                                <h4 className="font-black text-lg">{project.title}</h4>
-                                                <p className="text-xs opacity-50 uppercase tracking-widest font-bold">{project.tech.join(' • ')}</p>
+                                                <h4 className="font-black text-lg text-slate-900 dark:text-slate-100">{project.title}</h4>
+                                                <p className="text-xs uppercase tracking-widest font-bold text-slate-500 dark:text-slate-300">{project.tech.join(' • ')}</p>
                                             </div>
                                         </div>
                                         <div className="flex items-center space-x-3 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -404,14 +408,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isDark, onExit }
                 return (
                     <div className="space-y-6">
                         <div className="flex justify-between items-center mb-8">
-                            <h2 className="text-3xl font-black tracking-tight">Technical Skills</h2>
+                            <h2 className="text-3xl font-black tracking-tight">Skills</h2>
                             {!isAdding && (
                                 <button
                                     onClick={() => {
                                         setIsAdding(true);
                                         setFormData({ name: '', level: 80, category: 'frontend' });
                                     }}
-                                    className="flex items-center space-x-2 bg-indigo-600 text-white px-6 py-3 rounded-xl font-black text-sm uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-600/20"
+                                    className="flex items-center space-x-2 bg-blue-600 text-white px-6 py-3 rounded-xl font-black text-sm uppercase tracking-widest hover:bg-blue-700 transition-all shadow-xl shadow-blue-600/20"
                                 >
                                     <Plus size={20} />
                                     <span>Add Skill</span>
@@ -425,19 +429,19 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isDark, onExit }
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                     <input
                                         placeholder="Skill Name"
-                                        className={`w-full p-4 rounded-xl border border-white/5 ${isDark ? 'bg-white/5' : 'bg-slate-50'}`}
+                                        className={`w-full p-4 rounded-xl border border-white/5 ${isDark ? 'bg-white/5 text-white' : 'bg-slate-50 text-slate-900'}`}
                                         value={formData.name}
                                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                     />
                                     <input
                                         type="number"
                                         placeholder="Level (0-100)"
-                                        className={`w-full p-4 rounded-xl border border-white/5 ${isDark ? 'bg-white/5' : 'bg-slate-50'}`}
+                                        className={`w-full p-4 rounded-xl border border-white/5 ${isDark ? 'bg-white/5 text-white' : 'bg-slate-50 text-slate-900'}`}
                                         value={formData.level}
                                         onChange={(e) => setFormData({ ...formData, level: parseInt(e.target.value) })}
                                     />
                                     <select
-                                        className={`w-full p-4 rounded-xl border border-white/5 ${isDark ? 'bg-white/5' : 'bg-slate-50'}`}
+                                        className={`w-full p-4 rounded-xl border border-white/5 ${isDark ? 'bg-white/5 text-white' : 'bg-slate-50 text-slate-900'}`}
                                         value={formData.category}
                                         onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                                     >
@@ -463,7 +467,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isDark, onExit }
                                                 alert('Failed to save skill.');
                                             }
                                         }}
-                                        className="bg-indigo-600 text-white px-8 py-3 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-indigo-700"
+                                        className="bg-blue-600 text-white px-8 py-3 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-blue-700"
                                     >
                                         {formData.id ? 'Update Skill' : 'Save Skill'}
                                     </button>
@@ -476,12 +480,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isDark, onExit }
                             {skills.map((skill) => (
                                 <div key={skill.id} className={`p-6 rounded-2xl border border-white/5 flex items-center justify-between group ${isDark ? 'bg-white/5' : 'bg-white shadow-sm'}`}>
                                     <div className="flex items-center space-x-6">
-                                        <div className="w-12 h-12 rounded-lg bg-indigo-600/10 flex items-center justify-center text-indigo-600 border border-indigo-500/10 font-bold uppercase text-[10px]">
+                                        <div className="w-12 h-12 rounded-lg bg-blue-600/10 flex items-center justify-center text-blue-600 dark:text-blue-400 border border-blue-500/10 font-bold uppercase text-[10px]">
                                             {skill.level}%
                                         </div>
                                         <div>
-                                            <h4 className="font-black text-lg">{skill.name}</h4>
-                                            <p className="text-xs opacity-50 uppercase tracking-widest font-bold">{skill.category}</p>
+                                            <h4 className="font-black text-lg text-slate-900 dark:text-slate-100">{skill.name}</h4>
+                                            <p className="text-xs uppercase tracking-widest font-bold text-slate-500 dark:text-slate-300">{skill.category}</p>
                                         </div>
                                     </div>
                                     <div className="flex items-center space-x-3 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -490,7 +494,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isDark, onExit }
                                                 setFormData(skill);
                                                 setIsAdding(true);
                                             }}
-                                            className="p-3 bg-indigo-600/10 text-indigo-600 rounded-xl hover:bg-indigo-600 hover:text-white transition-all"
+                                            className="p-3 bg-blue-600/10 text-blue-600 rounded-xl hover:bg-blue-600 hover:text-white transition-all"
                                         >
                                             <Edit size={18} />
                                         </button>
@@ -522,7 +526,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isDark, onExit }
                                         setIsAdding(true);
                                         setFormData({ role: '', company: '', period: '', description: '' });
                                     }}
-                                    className="flex items-center space-x-2 bg-emerald-600 text-white px-6 py-3 rounded-xl font-black text-sm uppercase tracking-widest hover:bg-emerald-700 transition-all shadow-xl shadow-emerald-600/20"
+                                    className="flex items-center space-x-2 bg-blue-600 text-white px-6 py-3 rounded-xl font-black text-sm uppercase tracking-widest hover:bg-blue-700 transition-all shadow-xl shadow-blue-600/20"
                                 >
                                     <Plus size={20} />
                                     <span>Add Experience</span>
@@ -536,25 +540,25 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isDark, onExit }
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <input
                                         placeholder="Role"
-                                        className={`w-full p-4 rounded-xl border border-white/5 ${isDark ? 'bg-white/5' : 'bg-slate-50'}`}
+                                        className={`w-full p-4 rounded-xl border border-white/5 ${isDark ? 'bg-white/5 text-white' : 'bg-slate-50 text-slate-900'}`}
                                         value={formData.role}
                                         onChange={(e) => setFormData({ ...formData, role: e.target.value })}
                                     />
                                     <input
                                         placeholder="Company"
-                                        className={`w-full p-4 rounded-xl border border-white/5 ${isDark ? 'bg-white/5' : 'bg-slate-50'}`}
+                                        className={`w-full p-4 rounded-xl border border-white/5 ${isDark ? 'bg-white/5 text-white' : 'bg-slate-50 text-slate-900'}`}
                                         value={formData.company}
                                         onChange={(e) => setFormData({ ...formData, company: e.target.value })}
                                     />
                                     <input
                                         placeholder="Period"
-                                        className={`w-full p-4 rounded-xl border border-white/5 ${isDark ? 'bg-white/5' : 'bg-slate-50'}`}
+                                        className={`w-full p-4 rounded-xl border border-white/5 ${isDark ? 'bg-white/5 text-white' : 'bg-slate-50 text-slate-900'}`}
                                         value={formData.period}
                                         onChange={(e) => setFormData({ ...formData, period: e.target.value })}
                                     />
                                     <textarea
                                         placeholder="Responsibilities (one per line)"
-                                        className={`w-full p-4 rounded-xl border border-white/5 md:col-span-2 min-h-[100px] ${isDark ? 'bg-white/5' : 'bg-slate-50'}`}
+                                        className={`w-full p-4 rounded-xl border border-white/5 md:col-span-2 min-h-[100px] ${isDark ? 'bg-white/5 text-white' : 'bg-slate-50 text-slate-900'}`}
                                         value={formData.description}
                                         onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                                     />
@@ -580,7 +584,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isDark, onExit }
                                                 alert('Failed to save experience.');
                                             }
                                         }}
-                                        className="bg-emerald-600 text-white px-8 py-3 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-emerald-700"
+                                        className="bg-blue-600 text-white px-8 py-3 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-blue-700"
                                     >
                                         {formData.id ? 'Update Experience' : 'Save Experience'}
                                     </button>
@@ -594,8 +598,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isDark, onExit }
                                 <div key={exp.id} className={`p-8 rounded-[2rem] border border-white/10 ${isDark ? 'bg-white/5' : 'bg-white shadow-md'} group`}>
                                     <div className="flex justify-between items-start mb-6">
                                         <div>
-                                            <h4 className="text-xl font-black">{exp.role}</h4>
-                                            <p className="text-sm text-emerald-500 font-bold uppercase tracking-widest">{exp.company} • {exp.period}</p>
+                                            <h4 className="text-xl font-black text-slate-900 dark:text-slate-100">{exp.role}</h4>
+                                            <p className="text-sm text-blue-500 font-bold uppercase tracking-widest">{exp.company} • {exp.period}</p>
                                         </div>
                                         <div className="flex items-center space-x-3 opacity-0 group-hover:opacity-100 transition-opacity">
                                             <button
@@ -603,7 +607,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isDark, onExit }
                                                     setFormData({ ...exp, description: exp.description.join('\n') });
                                                     setIsAdding(true);
                                                 }}
-                                                className="p-3 bg-emerald-600/10 text-emerald-600 rounded-xl hover:bg-emerald-600 hover:text-white transition-all"
+                                                className="p-3 bg-blue-600/10 text-blue-600 rounded-xl hover:bg-blue-600 hover:text-white transition-all"
                                             >
                                                 <Edit size={18} />
                                             </button>
@@ -622,8 +626,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isDark, onExit }
                                     </div>
                                     <ul className="space-y-3">
                                         {exp.description.map((desc: string, i: number) => (
-                                            <li key={i} className="flex items-start space-x-3 text-sm opacity-70">
-                                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-1.5 shrink-0" />
+                                            <li key={i} className="flex items-start space-x-3 text-sm text-slate-700 dark:text-slate-100">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1.5 shrink-0" />
                                                 <span>{desc}</span>
                                             </li>
                                         ))}
@@ -676,7 +680,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isDark, onExit }
                                                     </button>
                                                 )}
                                                 {msg.is_read && (
-                                                    <div className="text-xs font-black uppercase tracking-[0.2em] text-emerald-500 flex items-center space-x-2 opacity-50">
+                                                    <div className="text-xs font-black uppercase tracking-[0.2em] text-blue-500 flex items-center space-x-2 opacity-50">
                                                         <CheckCircle2 size={14} />
                                                         <span>Read</span>
                                                     </div>
@@ -703,7 +707,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isDark, onExit }
             default:
                 return (
                     <>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                             <StatsCard
                                 onClick={() => setActiveView('projects')}
                                 title="Live Projects"
@@ -719,7 +723,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isDark, onExit }
                                 value={dbStats.skillsCount.toString()}
                                 icon={Wrench}
                                 trend="+2"
-                                color="indigo"
+                                color="blue"
                                 isDark={isDark}
                             />
                             <StatsCard
@@ -728,7 +732,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isDark, onExit }
                                 value={dbStats.experiencesCount.toString()}
                                 icon={Briefcase}
                                 trend="Active"
-                                color="emerald"
+                                color="blue"
                                 isDark={isDark}
                             />
                             <StatsCard
@@ -740,6 +744,50 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isDark, onExit }
                                 color="orange"
                                 isDark={isDark}
                             />
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+                            <motion.button
+                                whileHover={{ y: -5 }}
+                                onClick={() => setActiveView('projects')}
+                                className={`p-6 rounded-[2rem] border border-white/10 flex items-center space-x-5 transition-all group ${isDark ? 'glass-dark' : 'bg-white shadow-lg'}`}
+                            >
+                                <div className="w-12 h-12 rounded-2xl bg-blue-600/10 flex items-center justify-center text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-all">
+                                    <Plus size={24} />
+                                </div>
+                                <div className="text-left">
+                                    <p className="text-xs font-black uppercase tracking-widest opacity-50 mb-1">Action</p>
+                                    <p className="text-sm font-black uppercase tracking-[0.1em]">New Project</p>
+                                </div>
+                            </motion.button>
+
+                            <motion.button
+                                whileHover={{ y: -5 }}
+                                onClick={() => setActiveView('home')}
+                                className={`p-6 rounded-[2rem] border border-white/10 flex items-center space-x-5 transition-all group ${isDark ? 'glass-dark' : 'bg-white shadow-lg'}`}
+                            >
+                                <div className="w-12 h-12 rounded-2xl bg-emerald-600/10 flex items-center justify-center text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-all">
+                                    <ShieldCheck size={24} />
+                                </div>
+                                <div className="text-left">
+                                    <p className="text-xs font-black uppercase tracking-widest opacity-50 mb-1">Status</p>
+                                    <p className="text-sm font-black uppercase tracking-[0.1em]">Toggle Availability</p>
+                                </div>
+                            </motion.button>
+
+                            <motion.button
+                                whileHover={{ y: -5 }}
+                                onClick={onExit}
+                                className={`p-6 rounded-[2rem] border border-white/10 flex items-center space-x-5 transition-all group ${isDark ? 'glass-dark' : 'bg-white shadow-lg'}`}
+                            >
+                                <div className="w-12 h-12 rounded-2xl bg-orange-600/10 flex items-center justify-center text-orange-600 group-hover:bg-orange-600 group-hover:text-white transition-all">
+                                    <ArrowUpRight size={24} />
+                                </div>
+                                <div className="text-left">
+                                    <p className="text-xs font-black uppercase tracking-widest opacity-50 mb-1">Preview</p>
+                                    <p className="text-sm font-black uppercase tracking-[0.1em]">View Live Site</p>
+                                </div>
+                            </motion.button>
                         </div>
 
                         <section className={`rounded-[2.5rem] p-10 border border-white/10 relative overflow-hidden shadow-2xl ${isDark ? 'glass-dark text-white' : 'bg-white text-slate-900 shadow-lg'}`}>
@@ -772,7 +820,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isDark, onExit }
                                             <p className="text-[10px] opacity-40 uppercase tracking-widest font-bold">Latency: Optimal • Connection: Secure • Click to Refresh</p>
                                         </div>
                                     </div>
-                                    <span className="text-[10px] font-black text-emerald-500">ONLINE</span>
+                                    <span className="text-[10px] font-black text-blue-500">ONLINE</span>
                                 </div>
                                 <div
                                     onClick={fetchData}
@@ -792,7 +840,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isDark, onExit }
                                 {messages.slice(0, 1).map(msg => (
                                     <div key={msg.id} className="flex items-center justify-between p-6 rounded-2xl bg-white/5 border border-white/5">
                                         <div className="flex items-center space-x-4">
-                                            <div className="w-10 h-10 rounded-xl bg-emerald-600/10 flex items-center justify-center text-emerald-600">
+                                            <div className="w-10 h-10 rounded-xl bg-blue-600/10 flex items-center justify-center text-blue-600">
                                                 <Mail size={20} />
                                             </div>
                                             <div>
@@ -814,7 +862,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isDark, onExit }
 
                         <div className={`p-10 rounded-[2.5rem] border border-white/10 ${isDark ? 'glass-dark' : 'bg-white shadow-xl'}`}>
                             <div className="flex items-center space-x-4 mb-10">
-                                <div className="w-12 h-12 rounded-2xl bg-blue-600/10 flex items-center justify-center text-blue-600 border border-blue-500/10">
+                                <div className="w-12 h-12 rounded-2xl bg-emerald-600/10 flex items-center justify-center text-emerald-600 border border-emerald-500/10">
                                     <Settings size={24} />
                                 </div>
                                 <div>
@@ -826,24 +874,24 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isDark, onExit }
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-black uppercase tracking-widest opacity-40 ml-2">Display Name</label>
-                                    <input className={`w-full p-4 rounded-xl border border-white/5 ${isDark ? 'bg-white/5' : 'bg-slate-50'}`} defaultValue="Abdullahi Muse Issa" />
+                                    <input className={`w-full p-4 rounded-xl border border-white/5 ${isDark ? 'bg-white/5 text-white' : 'bg-slate-50'}`} defaultValue="Abdullahi Muse Issa" />
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-black uppercase tracking-widest opacity-40 ml-2">Contact Email</label>
-                                    <input className={`w-full p-4 rounded-xl border border-white/5 ${isDark ? 'bg-white/5' : 'bg-slate-50'}`} defaultValue="abdallaise877@gmail.com" />
+                                    <input className={`w-full p-4 rounded-xl border border-white/5 ${isDark ? 'bg-white/5 text-white' : 'bg-slate-50'}`} defaultValue="abdallaise877@gmail.com" />
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-black uppercase tracking-widest opacity-40 ml-2">Phone Number</label>
-                                    <input className={`w-full p-4 rounded-xl border border-white/5 ${isDark ? 'bg-white/5' : 'bg-slate-50'}`} defaultValue="+252 61 4163362" />
+                                    <input className={`w-full p-4 rounded-xl border border-white/5 ${isDark ? 'bg-white/5 text-white' : 'bg-slate-50'}`} defaultValue="+252 61 4163362" />
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-black uppercase tracking-widest opacity-40 ml-2">Location</label>
-                                    <input className={`w-full p-4 rounded-xl border border-white/5 ${isDark ? 'bg-white/5' : 'bg-slate-50'}`} defaultValue="Mogadishu, Somalia" />
+                                    <input className={`w-full p-4 rounded-xl border border-white/5 ${isDark ? 'bg-white/5 text-white' : 'bg-slate-50'}`} defaultValue="Mogadishu, Somalia" />
                                 </div>
                             </div>
 
                             <div className="mt-10 pt-10 border-t border-white/5">
-                                <button className="bg-blue-600 text-white px-8 py-3 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-blue-700 shadow-xl shadow-blue-600/20">
+                                <button className="bg-emerald-600 text-white px-8 py-3 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-emerald-700 shadow-xl shadow-emerald-600/20">
                                     Save Changes
                                 </button>
                             </div>
@@ -867,7 +915,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isDark, onExit }
     };
 
     return (
-        <div className={`h-screen ${isDark ? 'bg-[#020617] text-white' : 'bg-slate-50 text-slate-900'} flex selection:bg-blue-500/30 relative overflow-hidden`}>
+        <div className={`h-screen ${isDark ? 'bg-[#020617] text-white' : 'bg-slate-50 text-slate-900'} flex selection:bg-emerald-500/30 relative overflow-hidden`}>
+            {/* Background Animation */}
+            <ThreeScene />
+
             {/* Mobile Sidebar Overlay */}
             <AnimatePresence>
                 {isSidebarOpen && (
@@ -884,8 +935,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isDark, onExit }
             <aside className={`fixed lg:sticky top-0 h-screen w-72 flex flex-col border-r border-white/5 p-8 z-[100] transition-transform duration-300 ease-in-out ${isDark ? 'bg-slate-950/95 backdrop-blur-xl' : 'bg-white/95 backdrop-blur-xl'} ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
                 <div className="flex items-center justify-between mb-12">
                     <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white font-black text-lg shadow-xl shadow-blue-600/30">P</div>
-                        <span className="text-xl font-black tracking-tighter uppercase whitespace-nowrap">Portfolio</span>
+                        <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white font-black text-lg shadow-xl shadow-blue-600/30">C</div>
+                        <span className="text-xl font-black tracking-tighter uppercase whitespace-nowrap">Command Center</span>
                     </div>
                     <button onClick={() => setIsSidebarOpen(false)} className="lg:hidden text-slate-500 hover:text-white transition-colors">
                         <X size={24} />
@@ -902,7 +953,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isDark, onExit }
                             }}
                             className={`w-full flex items-center space-x-4 px-5 py-4 rounded-xl transition-all font-black text-[10px] uppercase tracking-[0.2em] relative group ${activeView === item.id
                                 ? 'bg-blue-600 text-white shadow-xl shadow-blue-600/30'
-                                : 'text-slate-500 hover:bg-white/5 hover:text-white'
+                                : 'text-slate-500 dark:text-slate-400 hover:bg-white/5 hover:text-white dark:hover:text-blue-400'
                                 }`}
                         >
                             <item.icon size={18} />
@@ -925,7 +976,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isDark, onExit }
                 </div>
             </aside>
 
-            <main className="flex-1 p-4 md:p-8 lg:p-14 overflow-y-auto overflow-x-hidden w-full max-w-[100vw]" style={{ WebkitOverflowScrolling: 'touch' }}>
+            <main className="flex-1 p-4 md:p-8 lg:p-14 overflow-y-auto overflow-x-hidden w-full max-w-[100vw] relative z-10" style={{ WebkitOverflowScrolling: 'touch' }}>
                 <header className="flex flex-col md:flex-row md:items-center justify-between mb-8 md:mb-12 gap-6">
                     <div className="flex items-center gap-4">
                         <button
@@ -935,24 +986,20 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isDark, onExit }
                             <Menu size={24} />
                         </button>
                         <div>
-                            <h1 className="text-3xl md:text-4xl font-black mb-1 capitalize tracking-tight">{activeView === 'home' ? 'Home Content' : activeView}</h1>
-                            <p className="text-slate-500 text-xs md:text-sm font-bold uppercase tracking-[0.2em] opacity-40">Portfolio Management Center</p>
+                            <h1 className="text-3xl md:text-4xl font-black mb-1 capitalize tracking-tight text-slate-900 dark:text-white">{activeView === 'home' ? 'Home Content' : activeView}</h1>
+                            <p className="text-slate-500 dark:text-slate-400 text-xs md:text-sm font-bold uppercase tracking-[0.2em] opacity-60">Portfolio Management Center</p>
                         </div>
                     </div>
 
                     <div className="flex items-center space-x-4 self-end md:self-auto">
                         <button
                             onClick={onExit}
-                            className="hidden sm:flex items-center space-x-2 bg-slate-500/10 text-slate-500 hover:text-blue-500 px-4 py-2 rounded-xl text-[10px] font-black tracking-widest border border-slate-500/10 cursor-pointer transition-colors"
+                            className="flex items-center space-x-3 bg-blue-600 text-white hover:bg-blue-700 px-6 py-3 rounded-2xl text-[10px] font-black tracking-widest shadow-xl shadow-blue-600/20 transition-all active:scale-95"
                         >
-                            <Home size={14} />
-                            <span>BACK TO HOME</span>
+                            <ArrowUpRight size={16} />
+                            <span>VIEW SITE</span>
                         </button>
-                        <div className="hidden sm:flex items-center space-x-2 bg-emerald-500/10 text-emerald-500 px-4 py-2 rounded-xl text-[10px] font-black tracking-widest border border-emerald-500/10 animate-pulse">
-                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                            <span>SYNC ACTIVE</span>
-                        </div>
-                        <div className="w-12 h-12 rounded-xl bg-blue-600/10 flex items-center justify-center text-blue-600 border border-blue-500/10 shadow-inner">
+                        <div className="w-12 h-12 rounded-xl bg-emerald-600/10 flex items-center justify-center text-emerald-600 border border-emerald-500/10 shadow-inner">
                             <ShieldCheck size={22} />
                         </div>
                     </div>

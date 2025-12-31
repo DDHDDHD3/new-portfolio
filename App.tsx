@@ -16,16 +16,21 @@ import {
   Mail,
   MapPin,
   MessageCircle,
+  MessageSquare,
+  Monitor,
+  Database,
   Phone,
   Server,
+  ShoppingCart,
+  Terminal,
   Wrench
 } from 'lucide-react';
 import { Navbar } from './components/Navbar';
-import { ThreeScene } from './components/ThreeScene';
 import { ChatAssistant } from './components/ChatAssistant';
 import { AdminDashboard } from './components/AdminDashboard';
 import { Login } from './components/Login';
-import { PERSONAL_INFO, EDUCATION } from './constants';
+import { ThreeScene } from './components/ThreeScene';
+import { PERSONAL_INFO, EDUCATION, SKILLS, EXPERIENCES, PROJECTS } from './constants';
 import { Project, Skill, Experience } from './types';
 import { databaseService } from './services/databaseService';
 
@@ -33,26 +38,68 @@ const App: React.FC = () => {
   const [isDark, setIsDark] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
 
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [skills, setSkills] = useState<Skill[]>([]);
-  const [experiences, setExperiences] = useState<Experience[]>([]);
-  const [heroData, setHeroData] = useState<any>(null);
-  const [isDataLoading, setIsDataLoading] = useState(true);
+  // Initialize state with cached data if available
+  const [projects, setProjects] = useState<Project[]>(() => {
+    const cached = localStorage.getItem('portfolio_projects');
+    return cached ? JSON.parse(cached) : PROJECTS;
+  });
+  const [skills, setSkills] = useState<Skill[]>(() => {
+    const cached = localStorage.getItem('portfolio_skills');
+    return cached ? JSON.parse(cached) : SKILLS;
+  });
+  const [experiences, setExperiences] = useState<Experience[]>(() => {
+    const cached = localStorage.getItem('portfolio_experiences');
+    return cached ? JSON.parse(cached) : EXPERIENCES;
+  });
+  const [heroData, setHeroData] = useState<any>(() => {
+    const cached = localStorage.getItem('portfolio_hero');
+    return cached ? JSON.parse(cached) : {
+      name: 'ABDULLAHI MUSE ISSA',
+      tagline: 'Full Stack Developer | Next.js | React | TypeScript',
+      bio: 'Building scalable digital solutions with a focus on performance.',
+      available: true
+    };
+  });
+
+  // Only show loader if we have NO data at all
+  const [isDataLoading, setIsDataLoading] = useState(() => {
+    return !localStorage.getItem('portfolio_hero');
+  });
 
   const fetchPortfolioData = async () => {
+    console.log('Starting background data sync...');
     try {
-      const [projs, skls, exps] = await Promise.all([
+      // Fetch everything in parallel
+      const [projs, skls, exps, hero] = await Promise.all([
         databaseService.getProjects(),
         databaseService.getSkills(),
-        databaseService.getExperiences()
+        databaseService.getExperiences(),
+        databaseService.getHero()
       ]);
-      setProjects(projs as Project[]);
-      setSkills(skls as Skill[]);
-      setExperiences(exps as Experience[]);
-      const hero = await databaseService.getHero();
-      setHeroData(hero);
+
+      if (projs && projs.length > 0) {
+        setProjects(projs as Project[]);
+        localStorage.setItem('portfolio_projects', JSON.stringify(projs));
+      }
+
+      if (skls && skls.length > 0) {
+        setSkills(skls as Skill[]);
+        localStorage.setItem('portfolio_skills', JSON.stringify(skls));
+      }
+
+      if (exps && exps.length > 0) {
+        setExperiences(exps as Experience[]);
+        localStorage.setItem('portfolio_experiences', JSON.stringify(exps));
+      }
+
+      if (hero) {
+        setHeroData(hero);
+        localStorage.setItem('portfolio_hero', JSON.stringify(hero));
+      }
+
+      console.log('Data sync complete');
     } catch (error) {
-      console.error('Error fetching portfolio data:', error);
+      console.error('Error syncing portfolio data:', error);
     } finally {
       setIsDataLoading(false);
     }
@@ -61,6 +108,20 @@ const App: React.FC = () => {
   // Fetch dynamic data
   useEffect(() => {
     fetchPortfolioData();
+
+    // Fast fail-safe: set loading to false after 1.5s if it's still stuck
+    // This ensures the app always loads using default data from constants.tsx
+    const timeout = setTimeout(() => {
+      setIsDataLoading(current => {
+        if (current) {
+          console.warn('Data loading taking too long - rendering with default data');
+          return false;
+        }
+        return current;
+      });
+    }, 1500);
+
+    return () => clearTimeout(timeout);
   }, []);
   const [currentView, setCurrentView] = useState<'portfolio' | 'login' | 'admin'>('portfolio');
   const { scrollYProgress } = useScroll();
@@ -358,24 +419,30 @@ Thank you for considering my application. I would welcome the opportunity to dis
   };
 
   if (currentView === 'login') {
-    return <Login isDark={isDark} onLogin={handleLogin} onExit={() => setCurrentView('portfolio')} />;
+    return (
+      <div className={`min-h-screen ${isDark ? 'bg-slate-950 text-white dark' : 'bg-slate-50 text-slate-900'}`}>
+        <Login isDark={isDark} onLogin={handleLogin} onExit={() => setCurrentView('portfolio')} />
+      </div>
+    );
   }
 
   if (isAdmin && currentView === 'admin') {
     return (
-      <AdminDashboard
-        isDark={isDark}
-        onExit={() => {
-          setCurrentView('portfolio');
-          fetchPortfolioData();
-        }}
-      />
+      <div className={`min-h-screen ${isDark ? 'bg-slate-950 text-white dark' : 'bg-slate-50 text-slate-900'}`}>
+        <AdminDashboard
+          isDark={isDark}
+          onExit={() => {
+            setCurrentView('portfolio');
+            fetchPortfolioData();
+          }}
+        />
+      </div>
     );
   }
 
   if (isDataLoading) {
     return (
-      <div className={`h-screen flex items-center justify-center ${isDark ? 'bg-slate-950 text-white' : 'bg-white text-slate-900'}`}>
+      <div className={`h-screen flex items-center justify-center ${isDark ? 'bg-background text-white dark' : 'bg-white text-slate-900'}`}>
         <div className="flex flex-col items-center">
           <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4" />
           <p className="font-black uppercase tracking-widest text-xs opacity-50">Loading Portfolio...</p>
@@ -396,16 +463,17 @@ Thank you for considering my application. I would welcome the opportunity to dis
   };
 
   return (
-    <div className={`min-h-screen transition-all duration-700 ${isDark ? 'bg-slate-950 text-white' : 'bg-slate-50 text-slate-900'} overflow-x-hidden selection:bg-blue-500/30`}>
+    <div className={`min-h-screen transition-all duration-700 ${isDark ? 'bg-background text-white dark' : 'bg-slate-50 text-slate-900'} overflow-x-hidden selection:bg-blue-500/30`}>
       <motion.div className="fixed top-0 left-0 right-0 h-1 bg-blue-600 z-[110] origin-left" style={{ scaleX }} />
+
+      <ThreeScene />
 
       <Navbar isDark={isDark} toggleTheme={() => setIsDark(!isDark)} onAdminClick={() => isAdmin ? setCurrentView('admin') : setCurrentView('login')} />
 
       <main className="relative z-10">
 
-        {/* Hero Section */}
+        {/* Hero Section - Updated for V4 Dark Mode */}
         <section id="home" className="relative min-h-screen flex items-center pt-24 overflow-hidden">
-          <ThreeScene />
           <div className="container mx-auto px-6 relative z-40">
             <div className="max-w-4xl">
               <motion.div
@@ -414,41 +482,58 @@ Thank you for considering my application. I would welcome the opportunity to dis
                 transition={{ duration: 0.8, ease: "easeOut" }}
               >
                 <motion.span
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.2 }}
-                  className={`inline-block px-4 py-1.5 md:px-5 md:py-2 mb-6 md:mb-8 text-xs md:text-sm font-bold tracking-widest uppercase rounded-full glass border shadow-sm ${heroData?.available ? 'text-emerald-600 dark:text-emerald-400 border-emerald-500/30' : 'text-red-500 border-red-500/30'}`}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.1, duration: 0.5 }}
+                  className={`inline-block px-4 py-1.5 md:px-5 md:py-2 mb-6 md:mb-8 text-xs md:text-sm font-black tracking-widest uppercase rounded-full border shadow-xl ${heroData?.available ? 'fixed-badge-blue' : 'fixed-badge-red'}`}
                 >
                   {heroData?.available ? 'Available for hire' : 'Currently Unavailable'}
                 </motion.span>
 
-                <h1 className="text-4xl sm:text-6xl md:text-8xl lg:text-9xl font-black mb-6 md:mb-8 leading-[1] tracking-tighter text-slate-900 dark:text-white uppercase">
+                <motion.h1
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2, duration: 0.8 }}
+                  className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black mb-6 md:mb-8 leading-[1.1] tracking-tighter text-slate-900 dark:text-white uppercase"
+                >
                   {heroData?.name ? (
                     <>
-                      {heroData.name.split(' ').slice(0, -2).join(' ')} <br />
-                      <span className="text-blue-600 dark:text-blue-500 drop-shadow-sm">{heroData.name.split(' ').slice(-2).join(' ')}</span>
+                      {heroData.name.split(' ').slice(0, -1).join(' ')} <br />
+                      <span className="text-blue-600 dark:text-blue-400 drop-shadow-2xl">{heroData.name.split(' ').slice(-1).join(' ')}</span>
                     </>
                   ) : (
                     <>
-                      ABDULLAHI <br />
-                      <span className="text-blue-600 dark:text-blue-500 drop-shadow-sm">MUSE ISSA</span>
+                      ABDULLAHI MUSE <br />
+                      <span className="text-blue-600 dark:text-blue-400 drop-shadow-2xl">ISSA</span>
                     </>
                   )}
-                </h1>
+                </motion.h1>
 
-                <p className="text-lg md:text-2xl text-slate-700 dark:text-slate-300 mb-8 md:mb-12 max-w-2xl leading-relaxed font-semibold">
-                  {heroData?.tagline || 'Full Stack Developer | Next.js | React | TypeScript. Building scalable digital solutions with a focus on performance and user experience.'}
-                </p>
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3, duration: 0.8 }}
+                  className="mb-10 md:mb-12 max-w-2xl"
+                >
+                  <p className="text-xl md:text-2xl text-slate-700 dark:text-slate-300 leading-relaxed font-medium">
+                    {heroData?.tagline || 'Full Stack Developer | Next.js | React | TypeScript. Building scalable digital solutions with a focus on performance and user experience.'}
+                  </p>
+                </motion.div>
 
-                <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-12 relative z-50 pointer-events-auto">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4, duration: 0.8 }}
+                  className="flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-12 relative z-50 pointer-events-auto"
+                >
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={handleDownloadCV}
-                    className="w-full sm:w-auto px-8 md:px-10 py-4 md:py-5 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-black flex items-center justify-center space-x-4 transition-all shadow-2xl shadow-blue-600/40 group cursor-pointer"
+                    className="w-full sm:w-auto px-6 md:px-8 py-3 md:py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-black flex items-center justify-center space-x-3 transition-all shadow-2xl shadow-blue-600/40 group cursor-pointer"
                   >
-                    <Download size={24} className="group-hover:-translate-y-1 transition-transform" />
-                    <span className="text-lg md:text-xl">Download CV</span>
+                    <Download size={20} className="group-hover:-translate-y-1 transition-transform" />
+                    <span className="text-base md:text-lg">Download CV</span>
                   </motion.button>
 
                   <motion.a
@@ -460,7 +545,7 @@ Thank you for considering my application. I would welcome the opportunity to dis
                     <span>Contact Me</span>
                     <ArrowRight size={22} className="group-hover:translate-x-2 transition-transform" />
                   </motion.a>
-                </div>
+                </motion.div>
               </motion.div>
             </div>
           </div>
@@ -486,7 +571,7 @@ Thank you for considering my application. I would welcome the opportunity to dis
                   />
                 </div>
                 <div className="absolute -bottom-10 -right-10 w-48 h-48 bg-blue-600/40 blur-[100px] -z-10 animate-pulse" />
-                <div className="absolute -top-10 -left-10 w-48 h-48 bg-indigo-600/40 blur-[100px] -z-10 animate-pulse" />
+                <div className="absolute -top-10 -left-10 w-48 h-48 bg-blue-600/40 blur-[100px] -z-10 animate-pulse" />
               </motion.div>
 
               <motion.div
@@ -494,21 +579,26 @@ Thank you for considering my application. I would welcome the opportunity to dis
                 initial={{ opacity: 0, x: 50 }}
                 viewport={{ once: true }}
               >
-                <h2 className="text-4xl md:text-6xl font-black mb-8 md:mb-10 text-slate-900 dark:text-white tracking-tighter">Professional Bio</h2>
+                <h2 className="text-4xl md:text-5xl lg:text-6xl font-black mb-8 md:mb-12 text-slate-900 dark:text-white tracking-tighter uppercase">
+                  Professional Bio
+                </h2>
                 <div className="space-y-6">
-                  <p className="text-lg md:text-xl text-slate-700 dark:text-slate-300 leading-relaxed font-medium whitespace-pre-line">
-                    {heroData?.bio || "I am a highly motivated and dedicated Full Stack Developer with a strong background in customer service, system management, and IT. Based in Mogadishu, Somalia, I specialize in the MEAN stack and modern frontend frameworks like Next.js."}
-                  </p>
+                  <div className="space-y-6">
+                    <p className="text-xl md:text-2xl text-slate-700 dark:text-slate-300 leading-relaxed font-medium whitespace-pre-line">
+                      {heroData?.bio || "I am a highly motivated and dedicated Full Stack Developer with a strong background in customer service, system management, and IT. Based in Mogadishu, Somalia, I specialize in the MEAN stack and modern frontend frameworks like Next.js."}
+                    </p>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-12">
                   <div className="p-6 md:p-8 rounded-3xl glass-dark border border-white/10 shadow-xl">
-                    <h4 className="flex items-center space-x-2 text-blue-500 font-black mb-3 uppercase tracking-widest text-xs">
-                      <Info size={14} />
-                      <span>Personal Details</span>
-
+                    <h4 className="badge-label mb-3">
+                      <div className="flex items-center space-x-2">
+                        <Info size={14} />
+                        <span>Personal Details</span>
+                      </div>
                     </h4>
-                    <div className="space-y-1 text-sm font-bold text-slate-700 dark:text-slate-300">
+                    <div className="space-y-1 text-sm font-bold text-slate-700 dark:text-white">
                       <div className="flex items-center">
                         <span className="mr-2">DOB:</span>
                         <div className="relative">
@@ -539,17 +629,22 @@ Thank you for considering my application. I would welcome the opportunity to dis
                           </motion.div>
                         </div>
                       </div>
-                      <p>Nationality: {PERSONAL_INFO.nationality}</p>
+                      <p className="flex items-center">
+                        <span className="mr-2">Nationality:</span>
+                        <span className="text-blue-600 dark:text-blue-400 font-black">{PERSONAL_INFO.nationality}</span>
+                      </p>
                     </div>
                   </div>
                   <div className="p-8 rounded-3xl glass-dark border border-white/10 shadow-xl">
-                    <h4 className="flex items-center space-x-2 text-indigo-500 font-black mb-3 uppercase tracking-widest text-xs">
-                      <Languages size={14} />
-                      <span>Languages</span>
+                    <h4 className="badge-label mb-3">
+                      <div className="flex items-center space-x-2">
+                        <Languages size={14} />
+                        <span>Languages</span>
+                      </div>
                     </h4>
                     <div className="flex flex-wrap gap-2">
                       {PERSONAL_INFO.languages.map(lang => (
-                        <span key={lang} className="text-sm font-bold text-slate-700 dark:text-slate-300 bg-white/5 px-2 py-1 rounded-md">{lang}</span>
+                        <span key={lang} className="text-sm font-bold text-slate-700 dark:text-white bg-white/5 px-2 py-1 rounded-md">{lang}</span>
                       ))}
                     </div>
                   </div>
@@ -560,42 +655,49 @@ Thank you for considering my application. I would welcome the opportunity to dis
         </section>
 
         {/* Skills Section */}
-        <section id="skills" className="py-20 md:py-32 bg-white/50 dark:bg-black/20 scroll-mt-24">
+        <section id="skills" className="py-20 md:py-32 bg-slate-50 dark:bg-slate-950/50 scroll-mt-24">
           <div className="container mx-auto px-6">
-            <div className="text-center mb-12 md:mb-20">
-              <h2 className="text-4xl md:text-6xl font-black mb-6 text-slate-900 dark:text-white tracking-tighter">Technical Prowess</h2>
-              <div className="w-24 h-2 bg-blue-600 mx-auto rounded-full shadow-lg shadow-blue-500/40" />
+            <div className="mb-10 md:mb-16 text-left">
+              <h2 className="text-3xl md:text-4xl font-black mb-3 text-slate-900 dark:text-white tracking-tight">
+                Skills
+              </h2>
+              <p className="text-slate-500 dark:text-slate-400 text-lg max-w-2xl mb-6">
+                A comprehensive overview of my technical stack and proficiency levels across frontend, backend, and development tools.
+              </p>
+              <div className="w-20 h-1 bg-blue-600 rounded-full shadow-lg shadow-blue-500/20" />
             </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-10">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {['Frontend', 'Backend', 'Tools'].map((cat) => (
                 <motion.div
                   key={cat}
                   whileInView={{ opacity: 1, y: 0 }}
-                  initial={{ opacity: 0, y: 30 }}
+                  initial={{ opacity: 0, y: 50 }}
+                  transition={{ duration: 0.8, ease: "easeOut" }}
                   viewport={{ once: true }}
-                  className="p-8 md:p-10 rounded-[2.5rem] md:rounded-[3rem] glass-dark border border-white/10 shadow-2xl relative group overflow-hidden"
+                  className="p-8 rounded-[2rem] bg-white/40 dark:bg-slate-900/60 border border-slate-200 dark:border-white/5 shadow-2xl relative group overflow-hidden"
                 >
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-blue-600/10 blur-[60px] group-hover:bg-blue-600/20 transition-all" />
-                  <h3 className="text-2xl md:text-3xl font-black mb-8 md:mb-10 flex items-center space-x-4 text-slate-900 dark:text-white">
-                    <span className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-blue-600/20 flex items-center justify-center text-blue-600 dark:text-blue-400">
-                      {cat === 'Frontend' ? <Github size={24} /> : cat === 'Backend' ? <Server size={24} /> : <Wrench size={24} />}
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-blue-600/5 blur-[60px]" />
+                  <h3 className="text-2xl font-black mb-8 flex items-center space-x-4">
+                    <span className="w-12 h-12 rounded-2xl bg-blue-600/10 flex items-center justify-center text-blue-600 dark:text-blue-400 shadow-inner">
+                      {cat === 'Frontend' ? <Monitor size={24} /> : cat === 'Backend' ? <Database size={24} /> : <Wrench size={24} />}
                     </span>
-                    <span>{cat}</span>
+                    <span className="text-slate-900 dark:text-white font-black">{cat === 'Tools' ? 'Tools & DevOps' : cat}</span>
                   </h3>
-                  <div className="space-y-6 md:space-y-8">
-                    {skills.filter(s => s.category.toLowerCase() === cat.toLowerCase()).map((skill, idx) => (
+                  <div className="space-y-8">
+                    {skills.filter(s => s.category.toLowerCase() === (cat === 'Tools' ? 'tools' : cat.toLowerCase())).map((skill, idx) => (
                       <div key={idx}>
-                        <div className="flex justify-between mb-2 md:mb-3">
-                          <span className="font-bold text-base md:text-lg text-slate-800 dark:text-slate-200">{skill.name}</span>
-                          <span className="text-xs md:text-sm font-black text-blue-600 dark:text-blue-400">{skill.level}%</span>
+                        <div className="flex justify-between mb-3">
+                          <span className="font-bold text-slate-700 dark:text-slate-200 text-base">
+                            {skill.name}
+                          </span>
+                          <span className="text-sm font-black text-blue-600 dark:text-blue-500">{skill.level}%</span>
                         </div>
-                        <div className="h-2.5 md:h-3 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
+                        <div className="h-2.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
                           <motion.div
                             initial={{ width: 0 }}
                             whileInView={{ width: `${skill.level}%` }}
                             transition={{ duration: 1.5, ease: "easeOut" }}
-                            className="h-full bg-blue-600 rounded-full shadow-[0_0_15px_rgba(37,99,235,0.6)]"
+                            className="h-full bg-blue-600 dark:bg-blue-500 rounded-full shadow-[0_0_15px_rgba(37,99,235,0.4)]"
                           />
                         </div>
                       </div>
@@ -608,59 +710,104 @@ Thank you for considering my application. I would welcome the opportunity to dis
         </section>
 
         {/* Experience Section */}
-        <section id="experience" className="py-20 md:py-32 scroll-mt-24">
+        <section id="experience" className="py-20 md:py-32 scroll-mt-24 bg-slate-950/20">
           <div className="container mx-auto px-6">
-            <h2 className="text-4xl md:text-6xl font-black mb-16 md:mb-24 text-center text-slate-900 dark:text-white tracking-tighter">Journey & Expertise</h2>
+            <div className="mb-16 md:mb-24">
+              <h2 className="text-3xl md:text-5xl font-black mb-6 text-slate-900 dark:text-white tracking-tighter">
+                Journey & Expertise
+              </h2>
+              <p className="text-slate-500 dark:text-slate-300 text-lg max-w-3xl leading-relaxed">
+                A chronological overview of my journey as a Full-Stack Developer, highlighting key roles, achievements, and the technologies I've mastered along the way.
+              </p>
+            </div>
 
-            <div className="max-w-5xl mx-auto space-y-12 md:space-y-16">
+            <div className="max-w-5xl mx-auto">
               {experiences.map((exp, idx) => (
                 <motion.div
                   key={idx}
                   whileInView={{ opacity: 1, x: 0 }}
                   initial={{ opacity: 0, x: -50 }}
+                  transition={{ duration: 0.5, delay: idx * 0.1 }}
                   viewport={{ once: true }}
-                  className="relative pl-8 md:pl-12 border-l-4 border-blue-600/20 pb-12 md:pb-16 last:pb-0"
+                  className="relative pl-12 md:pl-24 pb-12 md:pb-20 last:pb-0"
                 >
-                  <div className="absolute left-[-14px] top-0 w-6 h-6 rounded-full bg-blue-600 border-4 border-slate-50 dark:border-slate-950 shadow-2xl" />
-                  <div className="p-6 md:p-10 rounded-[2.5rem] md:rounded-[3rem] glass-dark border border-white/10 hover:border-blue-500/40 transition-all group shadow-2xl">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 md:mb-8 gap-4 md:gap-6">
-                      <h3 className="text-2xl md:text-3xl font-black group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors tracking-tight">{exp.role}</h3>
-                      <span className="text-xs md:text-sm font-black bg-blue-600 text-white px-4 md:px-6 py-2 rounded-full shadow-lg shadow-blue-600/20 shrink-0 self-start md:self-center">{exp.period}</span>
-                    </div>
-                    <p className="text-blue-600 dark:text-blue-400 font-black text-lg md:text-xl mb-6 md:mb-8 flex items-center space-x-3">
-                      <Briefcase size={20} />
-                      <span>{exp.company}</span>
-                    </p>
-                    <ul className="space-y-4 md:space-y-6">
-                      {exp.description.map((item, i) => (
-                        <li key={i} className="flex items-start space-x-3 md:space-x-4 text-slate-700 dark:text-slate-300">
-                          <CheckCircle2 size={20} className="text-blue-600 dark:text-blue-500 shrink-0 mt-0.5" />
-                          <span className="text-base md:text-lg leading-relaxed font-medium">{item}</span>
-                        </li>
-                      ))}
-                    </ul>
+                  {/* Timeline line */}
+                  {idx !== experiences.length - 1 && (
+                    <div className="absolute left-[20px] md:left-[28px] top-10 bottom-0 w-0.5 bg-blue-600/20" />
+                  )}
+
+                  {/* Timeline icon */}
+                  <div className="absolute left-0 top-0 w-10 h-10 md:w-14 md:h-14 rounded-full bg-white dark:bg-slate-900 border-2 border-blue-600/30 flex items-center justify-center z-10 shadow-2xl">
+                    {idx === 0 ? <MessageSquare size={20} className="text-blue-500" /> : idx === 1 ? <ShoppingCart size={20} className="text-blue-500" /> : <Terminal size={20} className="text-blue-500" />}
                   </div>
+
+                  <motion.div
+                    whileHover={{ scale: 1.01 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    initial={{ opacity: 0, x: -30 }}
+                    transition={{ duration: 0.8, ease: "easeOut" }}
+                    viewport={{ once: true }}
+                    className="p-8 md:p-12 rounded-[2rem] md:rounded-[3rem] bg-white/40 dark:bg-slate-900/60 border border-slate-200 dark:border-white/5 transition-all group shadow-2xl relative overflow-hidden"
+                  >
+                    <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+                      <div>
+                        <h3 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors tracking-tight">{exp.role}</h3>
+                        <p className="text-blue-600 dark:text-blue-500 font-black text-lg mt-2 flex items-center space-x-3">
+                          <Briefcase size={20} />
+                          <span>{exp.company}</span>
+                        </p>
+                      </div>
+                      <span className="text-xs font-black bg-slate-800/80 text-slate-400 dark:text-slate-200 px-5 py-2 rounded-full border border-slate-700/50 shadow-lg shrink-0 self-start md:self-center uppercase tracking-widest">{exp.period}</span>
+                    </div>
+
+                    <div className="space-y-6">
+                      <ul className="space-y-5">
+                        {exp.description.map((item, i) => (
+                          <li key={i} className="flex items-start space-x-4 text-slate-700 dark:text-slate-200">
+                            <CheckCircle2 size={18} className="text-blue-600 dark:text-blue-500 shrink-0 mt-1" />
+                            <span className="text-base md:text-lg leading-relaxed font-medium">{item}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    {exp.technologies && (
+                      <div className="flex flex-wrap gap-3 mt-10 pt-8 border-t border-slate-800/50">
+                        {exp.technologies.map((t, i) => (
+                          <span key={i} className="px-4 py-1.5 rounded-xl bg-slate-800/40 text-[10px] md:text-[11px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-300 border border-slate-700/30">
+                            {t}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </motion.div>
                 </motion.div>
               ))}
             </div>
-
             <div className="mt-20 md:mt-32">
-              <h3 className="text-3xl md:text-4xl font-black mb-10 md:mb-16 text-center tracking-tight text-slate-900 dark:text-white">Academic Foundation</h3>
+              <h3 className="text-3xl md:text-4xl font-black mb-10 md:mb-16 text-center tracking-tight text-slate-900 dark:text-white">
+                Academic Foundation
+              </h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-10">
                 {EDUCATION.map((edu, idx) => (
                   <motion.div
                     key={idx}
                     whileInView={{ opacity: 1, scale: 1 }}
+                    whileHover={{ y: -10 }}
                     initial={{ opacity: 0, scale: 0.9 }}
                     viewport={{ once: true }}
-                    className="p-8 md:p-10 rounded-[2.5rem] md:rounded-[3rem] glass-dark border border-white/10 flex flex-col items-center text-center shadow-2xl hover:scale-[1.02] transition-transform"
+                    className="p-8 md:p-10 rounded-[2.5rem] md:rounded-[3rem] bg-white/40 dark:bg-slate-900/40 border border-slate-200 dark:border-white/5 flex flex-col items-center text-center shadow-2xl transition-all"
                   >
-                    <div className="w-16 h-16 md:w-20 md:h-20 rounded-3xl bg-indigo-600/10 flex items-center justify-center text-indigo-600 dark:text-indigo-400 mb-6 md:mb-8 shadow-inner">
+                    <div className="w-16 h-16 md:w-20 md:h-20 rounded-3xl bg-blue-600/10 flex items-center justify-center text-blue-600 dark:text-blue-400 mb-6 md:mb-8 shadow-inner border border-blue-500/10">
                       <GraduationCap size={32} />
                     </div>
-                    <h4 className="text-xl md:text-2xl font-black mb-3 text-slate-900 dark:text-white">{edu.degree}</h4>
-                    <p className="text-slate-500 dark:text-slate-400 text-base md:text-lg mb-4 md:mb-6 font-semibold">{edu.school}</p>
-                    <span className="text-sm md:text-md font-black text-blue-600 dark:text-blue-400 flex items-center space-x-3">
+                    <h4 className="text-xl md:text-2xl font-black mb-3 text-slate-900 dark:text-white">
+                      <span className="text-highlight !border-none !shadow-none p-0">{edu.degree}</span>
+                    </h4>
+                    <p className="text-slate-700 dark:text-slate-100 text-base md:text-lg mb-4 md:mb-6 font-semibold">
+                      <span className="text-highlight !bg-slate-500/5 !border-none !shadow-none !px-2 !py-0.5 rounded-lg">{edu.school}</span>
+                    </p>
+                    <span className="text-sm md:text-md font-black text-blue-600 dark:text-blue-400 flex items-center space-x-3 bg-blue-600/5 px-3 py-1 rounded-xl">
                       <Calendar size={16} />
                       <span>{edu.year}</span>
                     </span>
@@ -674,16 +821,19 @@ Thank you for considering my application. I would welcome the opportunity to dis
         {/* Projects Section */}
         <section id="projects" className="py-20 md:py-32 bg-white/50 dark:bg-black/20 scroll-mt-24">
           <div className="container mx-auto px-6">
-            <h2 className="text-4xl md:text-6xl font-black mb-16 md:mb-24 text-center text-slate-900 dark:text-white tracking-tighter">Featured Work</h2>
+            <h2 className="text-3xl md:text-5xl font-black mb-12 md:mb-16 text-center text-slate-900 dark:text-white tracking-tighter">
+              Projects
+            </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16">
               {projects.map((project, idx) => (
                 <motion.div
                   key={idx}
                   whileInView={{ opacity: 1, y: 0 }}
+                  whileHover={{ y: -10 }}
                   initial={{ opacity: 0, y: 50 }}
                   viewport={{ once: true }}
-                  className="group relative overflow-hidden rounded-[2.5rem] md:rounded-[3.5rem] glass-dark border border-white/10 shadow-2xl"
+                  className="group relative overflow-hidden rounded-[2.5rem] md:rounded-[3.5rem] bg-white/40 dark:bg-slate-900/40 border border-slate-200 dark:border-white/5 shadow-2xl transition-all"
                 >
                   <div className="aspect-video overflow-hidden relative">
                     <img
@@ -693,19 +843,23 @@ Thank you for considering my application. I would welcome the opportunity to dis
                     />
                   </div>
                   <div className="p-8 md:p-10">
-                    <h3 className="text-2xl md:text-3xl font-black mb-4 md:mb-6 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors tracking-tight">{project.title}</h3>
-                    <p className="text-base md:text-lg text-slate-600 dark:text-slate-400 mb-6 md:mb-8 line-clamp-2 font-medium leading-relaxed">{project.description}</p>
+                    <h3 className="text-2xl md:text-3xl font-black mb-4 md:mb-6 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors tracking-tight text-slate-900 dark:text-white">
+                      {project.title}
+                    </h3>
+                    <p className="text-base md:text-lg text-slate-600 dark:text-slate-100 mb-6 md:mb-8 line-clamp-2 font-medium leading-relaxed">
+                      {project.description}
+                    </p>
                     <div className="flex flex-wrap gap-2 md:gap-3 mb-8 md:mb-10">
                       {project.tech.map(t => (
                         <span key={t} className="px-4 py-1.5 md:px-5 md:py-2 text-[10px] md:text-[11px] font-black uppercase tracking-widest bg-blue-600/10 text-blue-600 dark:text-blue-400 border border-blue-600/20 rounded-xl">{t}</span>
                       ))}
                     </div>
                     <div className="flex space-x-6 md:space-x-8">
-                      <a href={project.link} className="flex items-center space-x-2 md:space-x-3 text-base md:text-lg font-black text-blue-600 dark:text-blue-500 hover:text-blue-700 dark:hover:text-blue-400 transition-colors group/link">
+                      <a href={project.link} className="flex items-center space-x-2 md:space-x-3 text-base md:text-lg font-black text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-400 transition-colors group/link">
                         <span>Live Demo</span>
                         <ExternalLink size={18} className="group-hover/link:-translate-y-1 transition-transform" />
                       </a>
-                      <a href={project.github} className="flex items-center space-x-2 md:space-x-3 text-base md:text-lg font-black text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors group/git">
+                      <a href={project.github} className="flex items-center space-x-2 md:space-x-3 text-base md:text-lg font-black text-slate-500 dark:text-slate-300 hover:text-slate-900 dark:hover:text-blue-400 transition-colors group/git">
                         <Github size={18} className="group-hover/git:rotate-12 transition-transform" />
                         <span>Source Code</span>
                       </a>
@@ -724,8 +878,10 @@ Thank you for considering my application. I would welcome the opportunity to dis
 
               <div className="grid lg:grid-cols-2 gap-12 md:gap-20 relative z-10">
                 <div>
-                  <h2 className="text-4xl md:text-7xl font-black mb-6 md:mb-10 tracking-tighter text-slate-900 dark:text-white">Let's Connect</h2>
-                  <p className="text-lg md:text-xl text-slate-600 dark:text-slate-400 mb-10 md:mb-16 leading-relaxed font-medium">
+                  <h2 className="text-3xl md:text-5xl font-black mb-6 md:mb-8 tracking-tighter text-slate-900 dark:text-white">
+                    Let's Connect
+                  </h2>
+                  <p className="text-lg md:text-xl text-slate-700 dark:text-slate-300 mb-10 md:mb-16 leading-relaxed font-medium">
                     I'm always open to new opportunities, collaborations, or just a friendly chat about technology. Reach out and I'll get back to you as soon as possible.
                   </p>
 
@@ -735,8 +891,10 @@ Thank you for considering my application. I would welcome the opportunity to dis
                         <Mail size={28} />
                       </div>
                       <div>
-                        <p className="text-xs uppercase tracking-[0.3em] font-black opacity-40 mb-2">Email me at</p>
-                        <p className="text-xl md:text-2xl font-black tracking-tight">{PERSONAL_INFO.email}</p>
+                        <p className="badge-label mb-2">Email me at</p>
+                        <p className="text-xl md:text-2xl font-black tracking-tight text-slate-900 dark:text-white">
+                          {PERSONAL_INFO.email}
+                        </p>
                       </div>
                     </div>
                     <div className="flex items-center space-x-6 md:space-x-8">
@@ -744,8 +902,10 @@ Thank you for considering my application. I would welcome the opportunity to dis
                         <Phone size={28} />
                       </div>
                       <div>
-                        <p className="text-xs uppercase tracking-[0.3em] font-black opacity-40 mb-2">Call me at</p>
-                        <p className="text-xl md:text-2xl font-black tracking-tight">{PERSONAL_INFO.phone}</p>
+                        <p className="badge-label mb-2">Call me at</p>
+                        <p className="text-xl md:text-2xl font-black tracking-tight text-slate-900 dark:text-white">
+                          {PERSONAL_INFO.phone}
+                        </p>
                       </div>
                     </div>
                     <div className="flex items-center space-x-6 md:space-x-8">
@@ -753,8 +913,10 @@ Thank you for considering my application. I would welcome the opportunity to dis
                         <MapPin size={28} />
                       </div>
                       <div>
-                        <p className="text-xs uppercase tracking-[0.3em] font-black opacity-40 mb-2">Located in</p>
-                        <p className="text-xl md:text-2xl font-black tracking-tight">{PERSONAL_INFO.location}</p>
+                        <p className="badge-label mb-2">Located in</p>
+                        <p className="text-xl md:text-2xl font-black tracking-tight text-slate-900 dark:text-white">
+                          {PERSONAL_INFO.location}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -763,17 +925,17 @@ Thank you for considering my application. I would welcome the opportunity to dis
                 <form className="space-y-6 md:space-y-8" onSubmit={handleSendMessage}>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 md:gap-8">
                     <div className="space-y-2 md:space-y-3">
-                      <label className="text-sm font-black uppercase tracking-widest opacity-60 ml-2">Your Name</label>
-                      <input name="name" required type="text" className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 md:py-5 focus:outline-none focus:ring-4 focus:ring-blue-600/20 transition-all text-base md:text-lg font-bold" placeholder="John Doe" />
+                      <label className="badge-label mb-2 ml-2">Your Name</label>
+                      <input name="name" required type="text" className="w-full bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl px-6 py-4 md:py-5 focus:outline-none focus:ring-4 focus:ring-blue-600/20 transition-all text-base md:text-lg font-bold text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500" placeholder="John Doe" />
                     </div>
                     <div className="space-y-2 md:space-y-3">
-                      <label className="text-sm font-black uppercase tracking-widest opacity-60 ml-2">Email Address</label>
-                      <input name="email" required type="email" className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 md:py-5 focus:outline-none focus:ring-4 focus:ring-blue-600/20 transition-all text-base md:text-lg font-bold" placeholder="john@example.com" />
+                      <label className="badge-label mb-2 ml-2">Email Address</label>
+                      <input name="email" required type="email" className="w-full bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl px-6 py-4 md:py-5 focus:outline-none focus:ring-4 focus:ring-blue-600/20 transition-all text-base md:text-lg font-bold text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500" placeholder="john@example.com" />
                     </div>
                   </div>
                   <div className="space-y-2 md:space-y-3">
-                    <label className="text-sm font-black uppercase tracking-widest opacity-60 ml-2">Your Message</label>
-                    <textarea name="message" required rows={5} className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 md:py-5 focus:outline-none focus:ring-4 focus:ring-blue-600/20 transition-all text-base md:text-lg font-bold resize-none" placeholder="Tell me about your project..."></textarea>
+                    <label className="badge-label mb-2 ml-2">Your Message</label>
+                    <textarea name="message" required rows={5} className="w-full bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl px-6 py-4 md:py-5 focus:outline-none focus:ring-4 focus:ring-blue-600/20 transition-all text-base md:text-lg font-bold resize-none text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500" placeholder="Tell me about your project..."></textarea>
                   </div>
                   <motion.button
                     whileHover={{ scale: 1.02 }}
@@ -805,22 +967,22 @@ Thank you for considering my application. I would welcome the opportunity to dis
         </section>
       </main>
 
-      <footer className="py-16 md:py-24 border-t border-white/10 relative z-10 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md">
+      <footer className="py-16 md:py-24 border-t border-white/5 relative z-10 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md">
         <div className="container mx-auto px-6 text-center">
-          <div className="text-4xl font-black bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-8 md:mb-10 inline-block tracking-tighter">
+          <div className="text-3xl font-black bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-6 md:mb-8 inline-block tracking-tighter">
             AMI.DEV
           </div>
-          <p className="text-slate-500 dark:text-slate-400 font-bold text-base md:text-lg mb-10 md:mb-12 max-w-xl mx-auto leading-relaxed text-center">
+          <p className="text-slate-500 dark:text-slate-400 font-bold text-sm md:text-base mb-8 md:mb-10 max-w-xl mx-auto leading-relaxed text-center">
             Crafting digital excellence in Mogadishu. Every pixel tells a story of innovation, dedication, and technical mastery.
           </p>
           <div className="flex justify-center space-x-6 md:space-x-8 mb-12 md:mb-16">
-            <a href="#" className="p-4 md:p-5 glass rounded-2xl hover:bg-blue-600 hover:text-white text-slate-500 transition-all shadow-xl group"><Github size={24} className="group-hover:scale-110 transition-transform md:w-[30px] md:h-[30px]" /></a>
-            <a href="#" className="p-4 md:p-5 glass rounded-2xl hover:bg-blue-600 hover:text-white text-slate-500 transition-all shadow-xl group"><Mail size={24} className="group-hover:scale-110 transition-transform md:w-[30px] md:h-[30px]" /></a>
-            <a href="#" className="p-4 md:p-5 glass rounded-2xl hover:bg-blue-600 hover:text-white text-slate-500 transition-all shadow-xl group"><MapPin size={24} className="group-hover:scale-110 transition-transform md:w-[30px] md:h-[30px]" /></a>
+            <a href="#" className="p-4 md:p-5 glass rounded-2xl hover:bg-blue-600 hover:text-white text-slate-500 dark:text-white transition-all shadow-xl group"><Github size={24} className="group-hover:scale-110 transition-transform md:w-[30px] md:h-[30px]" /></a>
+            <a href="#" className="p-4 md:p-5 glass rounded-2xl hover:bg-blue-600 hover:text-white text-slate-500 dark:text-white transition-all shadow-xl group"><Mail size={24} className="group-hover:scale-110 transition-transform md:w-[30px] md:h-[30px]" /></a>
+            <a href="#" className="p-4 md:p-5 glass rounded-2xl hover:bg-blue-600 hover:text-white text-slate-500 dark:text-white transition-all shadow-xl group"><MapPin size={24} className="group-hover:scale-110 transition-transform md:w-[30px] md:h-[30px]" /></a>
           </div>
-          <p className="text-slate-500 dark:text-slate-600 text-sm uppercase tracking-[0.5em] font-black">
+          <div className="text-slate-500 dark:text-slate-500 text-sm uppercase tracking-[0.5em] font-black">
             © {new Date().getFullYear()} Abdullahi Muse Issa
-          </p>
+          </div>
         </div>
       </footer>
 
@@ -831,7 +993,7 @@ Thank you for considering my application. I would welcome the opportunity to dis
           rel="noopener noreferrer"
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
-          className="p-4 rounded-full bg-green-500 text-white shadow-xl shadow-green-500/20 flex items-center justify-center"
+          className="p-4 rounded-full bg-blue-600 text-white shadow-xl shadow-blue-500/20 flex items-center justify-center"
           title="WhatsApp Me"
         >
           <MessageCircle size={28} />

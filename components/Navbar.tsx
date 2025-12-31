@@ -78,19 +78,21 @@ export const Navbar: React.FC<NavbarProps> = ({ isDark, toggleTheme, onAdminClic
               href={link.href}
               onClick={(e) => scrollToSection(e, link.href, link.special)}
               whileHover={{ y: -3, scale: 1.05 }}
-              className={`text-xs font-black tracking-[0.2em] uppercase transition-all cursor-pointer pointer-events-auto ${link.special
-                ? 'text-emerald-600 dark:text-emerald-500 hover:text-emerald-700'
-                : 'text-slate-800 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-500'
+              className={`text-[11px] font-black tracking-[0.2em] uppercase transition-all cursor-pointer pointer-events-auto ${link.special
+                ? 'text-blue-600'
+                : 'text-slate-900 dark:text-white'
                 }`}
             >
-              {link.name}
+              <span className={`transition-all ${link.special ? 'px-4 py-2 bg-blue-600 text-white rounded-xl shadow-lg shadow-blue-600/20 border border-blue-500' : 'hover:text-blue-600 dark:hover:text-blue-400'}`}>
+                {link.name}
+              </span>
             </motion.a>
           ))}
           <motion.button
             whileHover={{ scale: 1.1, rotate: 180 }}
             whileTap={{ scale: 0.9 }}
             onClick={toggleTheme}
-            className="p-3.5 rounded-2xl glass hover:bg-blue-600/20 text-blue-600 dark:text-blue-500 transition-all shadow-lg border border-blue-500/10 pointer-events-auto"
+            className="p-3.5 rounded-2xl glass hover:bg-blue-600/20 text-blue-600 dark:text-blue-400 transition-all shadow-lg border border-blue-500/10 pointer-events-auto"
           >
             {isDark ? <Sun size={20} /> : <Moon size={20} />}
           </motion.button>
@@ -100,7 +102,7 @@ export const Navbar: React.FC<NavbarProps> = ({ isDark, toggleTheme, onAdminClic
         <div className="md:hidden flex items-center space-x-4 z-[170]">
           <button
             onClick={toggleTheme}
-            className="p-2.5 rounded-xl glass text-blue-600 dark:text-blue-500 pointer-events-auto"
+            className="p-2.5 rounded-xl glass text-blue-600 dark:text-blue-400 pointer-events-auto"
           >
             {isDark ? <Sun size={20} /> : <Moon size={20} />}
           </button>
@@ -129,11 +131,11 @@ export const Navbar: React.FC<NavbarProps> = ({ isDark, toggleTheme, onAdminClic
                   href={link.href}
                   onClick={(e) => scrollToSection(e, link.href, link.special)}
                   className={`text-3xl font-black tracking-tight transition-colors pointer-events-auto ${link.special
-                    ? 'text-emerald-600 dark:text-emerald-500 hover:text-emerald-700'
-                    : 'text-slate-900 dark:text-white hover:text-blue-600'
+                    ? 'text-blue-600'
+                    : 'text-slate-900 dark:text-white'
                     }`}
                 >
-                  {link.name}
+                  <span className="text-highlight !py-2 !px-6 border-blue-50/10 shadow-sm inline-block">{link.name}</span>
                 </a>
               ))}
             </div>

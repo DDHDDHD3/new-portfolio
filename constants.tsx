@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Layout, Server, Wrench, GraduationCap, Briefcase, Globe, MessageSquare, ShieldCheck } from 'lucide-react';
 import { Skill, Experience, Project } from './types';
@@ -26,7 +25,8 @@ export const EXPERIENCES: Experience[] = [
       'Handled backend operations, ensuring secure and accurate data management.',
       'Provided guidance and support to users navigating the system.',
       'Generated timely reports and ensured platform reliability.'
-    ]
+    ],
+    technologies: ['Node.js', 'System Admin', 'Data Management', 'FinTech']
   },
   {
     role: 'Multimedia & System Management Assistant (Freelance)',
@@ -37,7 +37,8 @@ export const EXPERIENCES: Experience[] = [
       'Managed databases for registration and data tracking.',
       'Supported IT systems, including user accounts, digital filing, and reporting.',
       'Implemented system improvements to streamline operations.'
-    ]
+    ],
+    technologies: ['Adobe Suite', 'Multimedia', 'Database Mgmt', 'IT Support']
   }
 ];
 

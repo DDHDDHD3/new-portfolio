@@ -18,6 +18,18 @@ export default defineConfig(({ mode }) => {
         alias: {
           '@': path.resolve(__dirname, '.'),
         }
+      },
+      build: {
+        rollupOptions: {
+          output: {
+            manualChunks: {
+              vendor: ['react', 'react-dom'],
+              three: ['three', '@react-three/fiber', '@react-three/drei'],
+              pdf: ['jspdf', 'html2canvas'],
+              utils: ['framer-motion', 'lucide-react']
+            }
+          }
+        }
       }
     };
 });
